@@ -2,34 +2,36 @@
 /*
 ========================================
 File: register.php
-Version: 2.0
+Version: 3.1
 Changes from previous version:
-- Replaced full_name with first_name and last_name
-- Added nhs_number field
-- Made phone field required
-- Added duplicate checks for both email and NHS number
-- Added permanent project notes for group reference
+- Added message type handling (error / success)
+- Fixed message color system (red for errors, green for success)
+- Improved user feedback consistency
 ========================================
 
 // The phone number is required but not unique, as multiple users
-// (e.g., family members) may share the same contact number. The email
-// field is used as the unique identifier for authentication.
+// (e.g., family members) may share the same contact number.
+// The email field is used as the unique identifier for authentication.
 // An NHS Number field was included as a unique identifier for each patient,
 // reflecting real-world healthcare systems.
 // While authentication is handled via email for simplicity,
 // the NHS Number ensures accurate identification within the system.
 */
 
-// Include the database connection file
+// Start session so the navigation can react to login status
+session_start();
+
+// Include the database connection
 include 'db_connection.php';
 
-// Variable used to display feedback messages
+// Message variables
 $message = "";
+$message_type = "";
 
-// Check if the form was submitted using POST
+// Check whether the registration form has been submitted
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
-    // Get and clean form input
+    // Read and clean form input
     $nhs_number = trim($_POST['nhs_number']);
     $first_name = trim($_POST['first_name']);
     $last_name = trim($_POST['last_name']);
@@ -38,7 +40,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $phone = trim($_POST['phone']);
     $date_of_birth = $_POST['date_of_birth'];
 
-    // Check that all required fields are filled in
+    // Check all required fields
     if (
         !empty($nhs_number) &&
         !empty($first_name) &&
@@ -48,12 +50,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         !empty($phone)
     ) {
 
-        // Optional validation: NHS Number should contain exactly 10 digits
+        // Validate NHS Number
         if (!preg_match('/^\d{10}$/', $nhs_number)) {
             $message = "NHS Number must contain exactly 10 digits.";
+            $message_type = "error";
+
         } else {
 
-            // Check whether the email or NHS number already exists
+            // Check duplicates
             $check_sql = "SELECT user_id FROM users WHERE email = ? OR nhs_number = ?";
             $stmt = $conn->prepare($check_sql);
             $stmt->bind_param("ss", $email, $nhs_number);
@@ -62,12 +66,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
             if ($stmt->num_rows > 0) {
                 $message = "Email or NHS Number is already registered.";
+                $message_type = "error";
+
             } else {
 
-                // Hash the password before storing it in the database
+                // Hash password
                 $password_hash = password_hash($password, PASSWORD_DEFAULT);
 
-                // Insert the new user into the users table
+                // Insert user
                 $insert_sql = "INSERT INTO users (nhs_number, first_name, last_name, email, password_hash, phone, date_of_birth)
                                VALUES (?, ?, ?, ?, ?, ?, ?)";
                 $stmt = $conn->prepare($insert_sql);
@@ -83,14 +89,18 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 );
 
                 if ($stmt->execute()) {
-                    $message = "Registration successful.";
+                    $message = "Registration successful. You can now sign in to your account.";
+                    $message_type = "success";
                 } else {
                     $message = "Error: could not register user.";
+                    $message_type = "error";
                 }
             }
         }
+
     } else {
         $message = "Please fill in all required fields.";
+        $message_type = "error";
     }
 }
 ?>
@@ -101,37 +111,117 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Register</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <h2>User Registration</h2>
 
-    <?php if (!empty($message)) echo "<p>$message</p>"; ?>
+    <div class="top-bar">
+        NHS Appointment Booking System | Web Design and Development Project
+    </div>
 
-    <form method="POST" action="">
-        <label for="nhs_number">NHS Number:</label><br>
-        <input type="text" id="nhs_number" name="nhs_number" maxlength="10" required><br><br>
+    <header class="navbar">
+        <div class="logo-section">
+            <h1>NHS Booking</h1>
+            <p>Simple, secure, and accessible patient account management</p>
+        </div>
 
-        <label for="first_name">First Name:</label><br>
-        <input type="text" id="first_name" name="first_name" required><br><br>
+        <nav class="nav-links">
+            <a href="index.php">Home</a>
+            <a href="about.php">About Us</a>
+            <a href="faq.php">FAQ</a>
+            <a href="contact.php">Contact</a>
 
-        <label for="last_name">Last Name:</label><br>
-        <input type="text" id="last_name" name="last_name" required><br><br>
+            <?php if (isset($_SESSION['user_id'])): ?>
+                <a href="dashboard.php">Dashboard</a>
+                <a href="logout.php">Logout</a>
+            <?php else: ?>
+                <a href="register.php">Register</a>
+                <a href="login.php">Login</a>
+            <?php endif; ?>
+        </nav>
+    </header>
 
-        <label for="email">Email:</label><br>
-        <input type="email" id="email" name="email" required><br><br>
+    <main class="page-container">
+        <div class="page-card">
+            <h2 class="page-title">Create a New Account</h2>
 
-        <label for="password">Password:</label><br>
-        <input type="password" id="password" name="password" required><br><br>
+            <p class="page-intro">
+                Complete the form below to register as a new patient user in the system.
+            </p>
 
-        <label for="phone">Phone:</label><br>
-        <input type="text" id="phone" name="phone" required><br><br>
+            <!-- ✅ FIXED MESSAGE BLOCK -->
+            <?php
+            if (!empty($message)) {
+                $class = "message";
 
-        <label for="date_of_birth">Date of Birth:</label><br>
-        <input type="date" id="date_of_birth" name="date_of_birth"><br><br>
+                if ($message_type === "error") {
+                    $class .= " message-error";
+                } elseif ($message_type === "success") {
+                    $class .= " message-success";
+                } else {
+                    $class .= " message-info";
+                }
 
-        <button type="submit">Register</button>
-    </form>
+                echo "<div class='$class'>" . htmlspecialchars($message) . "</div>";
+            }
+            ?>
 
-    <p><a href="login.php">Go to Login</a></p>
+            <form method="POST">
+                <div class="form-grid">
+
+                    <div class="form-group">
+                        <label>NHS Number</label>
+                        <input type="text" name="nhs_number" maxlength="10" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Phone</label>
+                        <input type="text" name="phone" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label>First Name</label>
+                        <input type="text" name="first_name" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Last Name</label>
+                        <input type="text" name="last_name" required>
+                    </div>
+
+                    <div class="form-group full-width">
+                        <label>Email</label>
+                        <input type="email" name="email" required>
+                    </div>
+
+                    <div class="form-group full-width">
+                        <label>Password</label>
+                        <input type="password" name="password" required>
+                    </div>
+
+                    <div class="form-group full-width">
+                        <label>Date of Birth</label>
+                        <input type="date" name="date_of_birth">
+                    </div>
+
+                </div>
+
+                <div class="button-row">
+                    <button class="btn-primary">Register</button>
+                    <a href="index.php" class="btn-secondary">Back to Home</a>
+                </div>
+            </form>
+
+            <div class="info-links">
+                <p>Already have an account? <a href="login.php">Go to Login</a></p>
+            </div>
+
+        </div>
+    </main>
+
+    <footer class="footer">
+        <p>&copy; 2026 NHS Appointment Booking System | Student Project</p>
+    </footer>
+
 </body>
 </html>

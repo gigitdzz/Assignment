@@ -1,0 +1,284 @@
+/*
+========================================
+File: style.css
+Version: 1.1
+Changes from previous version:
+- Added separate styles for error, success, and info messages
+- Fixed message color system (red for errors, green for success)
+========================================
+*/
+
+/* Reset default browser spacing and use border-box sizing */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+/* Global page styling */
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f5f7fa;
+    color: #1f2937;
+    line-height: 1.6;
+}
+
+/* Remove default underline from links */
+a {
+    text-decoration: none;
+}
+
+/* Top information bar */
+.top-bar {
+    background-color: #005eb8;
+    color: white;
+    padding: 12px 40px;
+    font-size: 14px;
+}
+
+/* Main navigation container */
+.navbar {
+    background-color: white;
+    border-bottom: 1px solid #d1d5db;
+    padding: 18px 40px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 20px;
+}
+
+/* Website logo area */
+.logo-section h1 {
+    font-size: 28px;
+    color: #005eb8;
+    margin-bottom: 4px;
+}
+
+.logo-section p {
+    font-size: 14px;
+    color: #6b7280;
+}
+
+/* Navigation links */
+.nav-links {
+    display: flex;
+    gap: 24px;
+    flex-wrap: wrap;
+}
+
+.nav-links a {
+    color: #111827;
+    font-weight: 600;
+    transition: color 0.2s ease;
+}
+
+.nav-links a:hover {
+    color: #005eb8;
+}
+
+/* Shared page wrapper */
+.page-container {
+    max-width: 1100px;
+    margin: 40px auto;
+    padding: 0 20px;
+}
+
+/* Shared white content card */
+.page-card {
+    background-color: white;
+    border-radius: 14px;
+    padding: 32px;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+}
+
+/* Shared title styling */
+.page-title {
+    color: #005eb8;
+    font-size: 32px;
+    margin-bottom: 14px;
+}
+
+/* Shared intro text */
+.page-intro {
+    color: #4b5563;
+    margin-bottom: 24px;
+}
+
+/* Message box for success or feedback */
+.message {
+    background-color: #eef5ff;
+    border-left: 4px solid #005eb8;
+    padding: 12px 14px;
+    margin-bottom: 20px;
+    border-radius: 6px;
+    color: #1f2937;
+}
+
+/* Base message style */
+.message {
+    padding: 12px 14px;
+    margin-bottom: 20px;
+    border-radius: 6px;
+    font-weight: 500;
+}
+
+/* ERROR (RED) */
+.message-error {
+    background-color: #ffe5e5;
+    border-left: 4px solid #d90429;
+    color: #7a0c0c;
+}
+
+/* SUCCESS (GREEN) */
+.message-success {
+    background-color: #e6f9ec;
+    border-left: 4px solid #2b9348;
+    color: #1b5e20;
+}
+
+/* INFO (BLUE) */
+.message-info {
+    background-color: #eef5ff;
+    border-left: 4px solid #005eb8;
+    color: #1f2937;
+}
+
+/* Grid layout for forms */
+.form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 18px 20px;
+}
+
+/* Individual form group */
+.form-group {
+    display: flex;
+    flex-direction: column;
+}
+
+/* Make some fields span the full width */
+.form-group.full-width {
+    grid-column: 1 / -1;
+}
+
+/* Label styling */
+label {
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: #111827;
+}
+
+/* Input and textarea shared styling */
+input,
+textarea {
+    padding: 12px;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    font-size: 15px;
+}
+
+/* Focus state for better usability */
+input:focus,
+textarea:focus {
+    outline: none;
+    border-color: #005eb8;
+    box-shadow: 0 0 0 3px rgba(0, 94, 184, 0.12);
+}
+
+/* Textarea size */
+textarea {
+    min-height: 130px;
+    resize: vertical;
+}
+
+/* Shared button row */
+.button-row {
+    margin-top: 24px;
+    display: flex;
+    gap: 14px;
+    flex-wrap: wrap;
+}
+
+/* Shared button base */
+.btn-primary,
+.btn-secondary {
+    display: inline-block;
+    padding: 12px 20px;
+    border-radius: 8px;
+    font-weight: bold;
+    border: none;
+    cursor: pointer;
+    transition: 0.2s ease;
+}
+
+/* Primary action button */
+.btn-primary {
+    background-color: #005eb8;
+    color: white;
+}
+
+.btn-primary:hover {
+    background-color: #004a93;
+}
+
+/* Secondary action button */
+.btn-secondary {
+    background-color: white;
+    color: #005eb8;
+    border: 2px solid #005eb8;
+}
+
+.btn-secondary:hover {
+    background-color: #eef5ff;
+}
+
+/* Small text links section */
+.info-links {
+    margin-top: 20px;
+}
+
+.info-links a {
+    color: #005eb8;
+    font-weight: 600;
+}
+
+/* FAQ list wrapper */
+.faq-list {
+    display: grid;
+    gap: 16px;
+}
+
+/* Individual FAQ card */
+.faq-item {
+    background-color: #f9fbfd;
+    border: 1px solid #dbe4ee;
+    border-radius: 10px;
+    padding: 20px;
+}
+
+.faq-item h3 {
+    color: #005eb8;
+    margin-bottom: 10px;
+}
+
+/* Shared footer */
+.footer {
+    background-color: #003087;
+    color: white;
+    margin-top: 40px;
+    padding: 24px 20px;
+    text-align: center;
+}
+
+/* Responsive adjustments */
+@media (max-width: 800px) {
+    .navbar {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .form-grid {
+        grid-template-columns: 1fr;
+    }
+}

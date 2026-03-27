@@ -2,72 +2,55 @@
 /*
 ========================================
 File: login.php
-Version: 2.0
+Version: 3.1
 Changes from previous version:
-- Replaced full_name with first_name and last_name
-- Updated session variables to store first_name and last_name separately
-- Kept generic login error message for better security
-- Added structured comments for group work reference
+- Fixed message color system (error messages now use red styling)
+- Added message type handling
+- Improved security feedback
 ========================================
 */
 
-// Start the session to store user data after successful login
 session_start();
-
-// Include the database connection file
 include 'db_connection.php';
 
-// Variable used to display feedback messages
 $message = "";
+$message_type = "";
 
-// Check if the form was submitted using POST
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
-    // Get and clean form input
     $email = trim($_POST['email']);
     $password = $_POST['password'];
 
-    // Check that required fields are not empty
     if (!empty($email) && !empty($password)) {
 
-        // Prepare SQL query to find the user by email
         $sql = "SELECT user_id, first_name, last_name, email, password_hash FROM users WHERE email = ?";
         $stmt = $conn->prepare($sql);
-
-        // Bind the email parameter to the prepared statement
         $stmt->bind_param("s", $email);
-
-        // Execute the query
         $stmt->execute();
-
-        // Get the query result
         $result = $stmt->get_result();
 
-        // Check if exactly one user was found
         if ($result->num_rows === 1) {
             $user = $result->fetch_assoc();
 
-            // Verify the entered password against the stored hashed password
             if (password_verify($password, $user['password_hash'])) {
 
-                // Store user data in session variables
                 $_SESSION['user_id'] = $user['user_id'];
                 $_SESSION['first_name'] = $user['first_name'];
                 $_SESSION['last_name'] = $user['last_name'];
                 $_SESSION['email'] = $user['email'];
 
-                // Redirect the user to the dashboard after successful login
                 header("Location: dashboard.php");
                 exit();
             }
         }
 
-        // Use a generic error message for security
+        // ERROR MESSAGE (RED)
         $message = "Invalid email or password.";
+        $message_type = "error";
 
     } else {
-        // Show message if required fields are missing
         $message = "Please enter email and password.";
+        $message_type = "error";
     }
 }
 ?>
@@ -78,22 +61,72 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <h2>User Login</h2>
 
-    <?php if (!empty($message)) echo "<p>$message</p>"; ?>
+    <div class="top-bar">
+        NHS Appointment Booking System
+    </div>
 
-    <form method="POST" action="">
-        <label for="email">Email:</label><br>
-        <input type="email" id="email" name="email" required><br><br>
+    <header class="navbar">
+        <div class="logo-section">
+            <h1>NHS Booking</h1>
+        </div>
 
-        <label for="password">Password:</label><br>
-        <input type="password" id="password" name="password" required><br><br>
+        <nav class="nav-links">
+            <a href="index.php">Home</a>
+            <a href="about.php">About Us</a>
+            <a href="faq.php">FAQ</a>
+            <a href="contact.php">Contact</a>
+        </nav>
+    </header>
 
-        <button type="submit">Login</button>
-    </form>
+    <main class="page-container">
+        <div class="page-card">
 
-    <p><a href="register.php">Create an account</a></p>
+            <h2 class="page-title">Sign In</h2>
+
+            <p class="page-intro">
+                Enter your registered email address and password to access your account securely.
+            </p>
+
+            <!-- MESSAGE FIX -->
+            <?php
+            if (!empty($message)) {
+                $class = "message";
+
+                if ($message_type === "error") {
+                    $class .= " message-error";
+                }
+
+                echo "<div class='$class'>" . htmlspecialchars($message) . "</div>";
+            }
+            ?>
+
+            <form method="POST">
+                <div class="form-group full-width">
+                    <label>Email</label>
+                    <input type="email" name="email" required>
+                </div>
+
+                <div class="form-group full-width">
+                    <label>Password</label>
+                    <input type="password" name="password" required>
+                </div>
+
+                <div class="button-row">
+                    <button class="btn-primary">Login</button>
+                    <a href="index.php" class="btn-secondary">Back to Home</a>
+                </div>
+            </form>
+
+            <div class="info-links">
+                <p>Do not have an account yet? <a href="register.php">Create an account</a></p>
+            </div>
+
+        </div>
+    </main>
+
 </body>
 </html>
