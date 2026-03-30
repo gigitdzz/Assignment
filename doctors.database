@@ -1,8 +1,7 @@
-
+CREATE DATABASE IF NOT EXISTS nhs_booking_system;
 USE nhs_booking_system;
 
--- USERS TABLE
-CREATE TABLE users ( 
+CREATE TABLE IF NOT EXISTS users ( 
     user_id INT AUTO_INCREMENT PRIMARY KEY,
     full_name VARCHAR(100) NOT NULL,
     email VARCHAR(100) NOT NULL UNIQUE,
@@ -10,8 +9,7 @@ CREATE TABLE users (
     role ENUM('patient', 'admin') DEFAULT 'patient'
 );
 
---  DOCTORS TABLE
-CREATE TABLE doctors (
+CREATE TABLE IF NOT EXISTS doctors (
     doctor_id INT AUTO_INCREMENT PRIMARY KEY,
     doctor_name VARCHAR(100) NOT NULL,
     specialty VARCHAR(100) NOT NULL,
@@ -21,8 +19,7 @@ CREATE TABLE doctors (
     room_number VARCHAR(20)
 );
 
--- APPOINTMENTS TABLE
-CREATE TABLE appointments (
+CREATE TABLE IF NOT EXISTS appointments (
     appointment_id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT NOT NULL,
     doctor_id INT NOT NULL,
@@ -30,29 +27,26 @@ CREATE TABLE appointments (
     appointment_time TIME NOT NULL,
     status ENUM('booked', 'checked-in', 'cancelled', 'completed', 'rescheduled') DEFAULT 'booked',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (user_id) REFERENCES users(user_id),
-    FOREIGN KEY (doctor_id) REFERENCES doctors(doctor_id)
+    FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE,
+    FOREIGN KEY (doctor_id) REFERENCES doctors(doctor_id) ON DELETE CASCADE
 );
 
--- NOTIFICATIONS TABLE
-CREATE TABLE notifications (
+CREATE TABLE IF NOT EXISTS notifications (
     notification_id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT NOT NULL,
     message VARCHAR(255) NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (user_id) REFERENCES users(user_id)
+    FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
 );
 
---  CHECKINS TABLE
-CREATE TABLE checkins (
+CREATE TABLE IF NOT EXISTS checkins (
     checkin_id INT AUTO_INCREMENT PRIMARY KEY,
     appointment_id INT NOT NULL,
     checkin_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     status ENUM('checked-in') DEFAULT 'checked-in',
-    FOREIGN KEY (appointment_id) REFERENCES appointments(appointment_id)
+    FOREIGN KEY (appointment_id) REFERENCES appointments(appointment_id) ON DELETE CASCADE
 );
 
--- SAMPLE DATA doctors
 INSERT INTO doctors (doctor_name, specialty, email, phone, available_days, room_number)
 VALUES
 ('Dr Sarah Ahmed', 'General Practice', 's.ahmed@nhs.uk', '07111111111', 'Monday, Wednesday, Friday', 'A101'),
