@@ -104,10 +104,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     </header>
 
     <main class="page-container">
-        <div class="page-card">
+        <div class="page-card booking-card">
             <h2 class="page-title">Book an Appointment</h2>
             <p class="page-intro">
-                Choose a doctor, date, and time for your appointment.
+                Choose a doctor, select a date, and confirm your appointment time.
             </p>
 
             <?php if (!empty($message)): ?>
