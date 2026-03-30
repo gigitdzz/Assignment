@@ -46,30 +46,30 @@ $result = $conn->query($sql);
         <div class="page-card">
             <h2 class="page-title">Available Doctors</h2>
             <p class="page-intro">
-                Below is a list of available doctors and their specialisations. You can review the doctor details and continue directly to the booking form.
+                Browse our available doctors, view their specialties, and continue directly to the booking form.
             </p>
 
-            <div class="faq-list">
-                <?php if ($result && $result->num_rows > 0): ?>
+            <?php if ($result && $result->num_rows > 0): ?>
+                <div class="doctors-grid">
                     <?php while ($doctor = $result->fetch_assoc()): ?>
-                        <div class="faq-item">
-                            <h3><?php echo htmlspecialchars($doctor['doctor_name']); ?></h3>
-                            <p><strong>Specialty:</strong> <?php echo htmlspecialchars($doctor['specialty']); ?></p>
+                        <div class="doctor-card">
+                            <div class="doctor-name"><?php echo htmlspecialchars($doctor['doctor_name']); ?></div>
+                            <div class="doctor-badge"><?php echo htmlspecialchars($doctor['specialty']); ?></div>
 
                             <?php if (!empty($doctor['email'])): ?>
-                                <p><strong>Email:</strong> <?php echo htmlspecialchars($doctor['email']); ?></p>
+                                <div class="doctor-info"><strong>Email:</strong> <?php echo htmlspecialchars($doctor['email']); ?></div>
                             <?php endif; ?>
 
                             <?php if (!empty($doctor['phone'])): ?>
-                                <p><strong>Phone:</strong> <?php echo htmlspecialchars($doctor['phone']); ?></p>
+                                <div class="doctor-info"><strong>Phone:</strong> <?php echo htmlspecialchars($doctor['phone']); ?></div>
                             <?php endif; ?>
 
                             <?php if (!empty($doctor['available_days'])): ?>
-                                <p><strong>Available Days:</strong> <?php echo htmlspecialchars($doctor['available_days']); ?></p>
+                                <div class="doctor-info"><strong>Available Days:</strong> <?php echo htmlspecialchars($doctor['available_days']); ?></div>
                             <?php endif; ?>
 
                             <?php if (!empty($doctor['room_number'])): ?>
-                                <p><strong>Room Number:</strong> <?php echo htmlspecialchars($doctor['room_number']); ?></p>
+                                <div class="doctor-info"><strong>Room Number:</strong> <?php echo htmlspecialchars($doctor['room_number']); ?></div>
                             <?php endif; ?>
 
                             <div class="button-row">
@@ -77,10 +77,10 @@ $result = $conn->query($sql);
                             </div>
                         </div>
                     <?php endwhile; ?>
-                <?php else: ?>
-                    <div class="message message-info">No doctors are currently available.</div>
-                <?php endif; ?>
-            </div>
+                </div>
+            <?php else: ?>
+                <div class="message message-info">No doctors are currently available.</div>
+            <?php endif; ?>
 
             <div class="button-row">
                 <a href="index.php" class="btn-secondary">Back to Home</a>
