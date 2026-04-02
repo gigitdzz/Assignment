@@ -282,3 +282,58 @@ textarea {
         grid-template-columns: 1fr;
     }
 }
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 20px;
+    margin-bottom: 24px;
+}
+
+.dashboard-box {
+    background-color: #f9fbfd;
+    border: 1px solid #dbe4ee;
+    border-radius: 12px;
+    padding: 24px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.dashboard-box h3 {
+    color: #005eb8;
+    margin-bottom: 10px;
+    font-size: 20px;
+}
+
+.dashboard-box p {
+    font-size: 28px;
+    font-weight: bold;
+    color: #111827;
+}
+
+.table-wrapper {
+    overflow-x: auto;
+    margin-top: 20px;
+}
+
+.appointments-table {
+    width: 100%;
+    border-collapse: collapse;
+    background-color: white;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.appointments-table th,
+.appointments-table td {
+    padding: 12px 14px;
+    border: 1px solid #dbe4ee;
+    text-align: left;
+}
+
+.appointments-table th {
+    background-color: #005eb8;
+    color: white;
+}
+
+.appointments-table tr:nth-child(even) {
+    background-color: #f9fbfd;
+}
