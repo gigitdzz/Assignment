@@ -25,6 +25,10 @@ The NHS Number is stored as a unique identifier and validated using a regular ex
 Phone numbers are restricted to numeric input only.
 The email field is used for authentication and must be unique.
 A role field was introduced to distinguish between patient and admin users.
+Email: admin@test.com
+Password: admin123
+
+
 
 
 ## 🔹 Implemented Files
