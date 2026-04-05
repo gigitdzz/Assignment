@@ -8,6 +8,35 @@
 
 This part of the project focuses on the user authentication system and the core frontend structure of the NHS Appointment Booking System.
 
+Change Log 05-04-2026
+
+Changes to the register form:
+
+1. Added password validation.
+2. Changed the format of the NHS and phone numbers so they are grouped in a user-friendly way that facilitates visual review of the registrant.
+
+3. Minor visual change.
+
+4. No longer allows extra numbers in either the NHS number or phone number fields.
+
+5. Now does not register anyone born before 1900 or in future dates.
+
+For the database: Added the role to the table.
+
+1. Administrators can be added through the form with a unique, fictitious NHS number. However, they are assigned manually in the database by updating the user role. This prevents unauthorized users from registering as administrators.
+
+2. For development purposes, the passwords are 0000.
+This may be changed to regulated passwords that require minimum digits, uppercase letters, numbers, and symbols when development is complete.
+
+login.php
+
+Changes from previous version:
+- Added role-based redirection (admin vs patient)
+- Login uses email as unique identifier
+- Stores role in session
+- Improved message handling (error in red)
+
+
 ### The implementation includes:
 
 - User registration  
@@ -26,9 +55,10 @@ Phone numbers are restricted to numeric input only.
 The email field is used for authentication and must be unique.
 A role field was introduced to distinguish between patient and admin users.
 Email: admin@test.com
-Password: admin123
-
-
+Password: 0000
+Admin users are not created through the registration form.
+Instead, they are assigned manually in the database by updating the user role.
+This prevents unauthorized users from registering as administrators.
 
 
 ## 🔹 Implemented Files
