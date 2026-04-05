@@ -2,49 +2,73 @@
 /*
 ========================================
 File: login.php
-Version: 3.1
+Version: 4.0
 Changes from previous version:
-- Fixed message color system (error messages now use red styling)
-- Added message type handling
-- Improved security feedback
+- Added role-based redirection (admin vs patient)
+- Login uses email as unique identifier
+- Stores role in session
+- Improved message handling (error in red)
 ========================================
 */
 
+// Start session to manage login state
 session_start();
+
+// Include database connection
 include 'db_connection.php';
 
+// Message variables
 $message = "";
 $message_type = "";
 
+// Check if form was submitted
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
+    // Get user input
     $email = trim($_POST['email']);
     $password = $_POST['password'];
 
+    // Validate input
     if (!empty($email) && !empty($password)) {
 
-        $sql = "SELECT user_id, first_name, last_name, email, password_hash FROM users WHERE email = ?";
+        // Prepare query (secure against SQL injection)
+        $sql = "SELECT user_id, first_name, last_name, email, password_hash, role 
+                FROM users 
+                WHERE email = ?";
+
         $stmt = $conn->prepare($sql);
         $stmt->bind_param("s", $email);
         $stmt->execute();
+
         $result = $stmt->get_result();
 
+        // Check if user exists
         if ($result->num_rows === 1) {
+
             $user = $result->fetch_assoc();
 
+            // Verify password
             if (password_verify($password, $user['password_hash'])) {
 
+                // Store user data in session
                 $_SESSION['user_id'] = $user['user_id'];
                 $_SESSION['first_name'] = $user['first_name'];
                 $_SESSION['last_name'] = $user['last_name'];
                 $_SESSION['email'] = $user['email'];
+                $_SESSION['role'] = $user['role'];
 
-                header("Location: dashboard.php");
+                // Role-based redirection
+                if ($user['role'] === 'admin') {
+                    header("Location: admin_dashboard.php");
+                } else {
+                    header("Location: dashboard.php");
+                }
+
                 exit();
             }
         }
 
-        // ERROR MESSAGE (RED)
+        // Generic error message (security best practice)
         $message = "Invalid email or password.";
         $message_type = "error";
 
@@ -61,17 +85,20 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login</title>
+
+    <!-- Shared CSS -->
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
     <div class="top-bar">
-        NHS Appointment Booking System
+        NHS Appointment Booking System | Login
     </div>
 
     <header class="navbar">
         <div class="logo-section">
             <h1>NHS Booking</h1>
+            <p>Secure access to your account</p>
         </div>
 
         <nav class="nav-links">
@@ -91,7 +118,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 Enter your registered email address and password to access your account securely.
             </p>
 
-            <!-- MESSAGE FIX -->
+            <!-- MESSAGE DISPLAY -->
             <?php
             if (!empty($message)) {
                 $class = "message";
@@ -104,7 +131,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             }
             ?>
 
+            <!-- LOGIN FORM -->
             <form method="POST">
+
                 <div class="form-group full-width">
                     <label>Email</label>
                     <input type="email" name="email" required>
@@ -116,9 +145,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 </div>
 
                 <div class="button-row">
-                    <button class="btn-primary">Login</button>
+                    <button type="submit" class="btn-primary">Login</button>
                     <a href="index.php" class="btn-secondary">Back to Home</a>
                 </div>
+
             </form>
 
             <div class="info-links">
