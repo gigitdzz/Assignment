@@ -19,6 +19,14 @@ This part of the project focuses on the user authentication system and the core 
 
 ---
 
+## BD User
+
+The NHS Number is stored as a unique identifier and validated using a regular expression to ensure it contains exactly 10 digits.
+Phone numbers are restricted to numeric input only.
+The email field is used for authentication and must be unique.
+A role field was introduced to distinguish between patient and admin users.
+
+
 ## 🔹 Implemented Files
 
 ### 🔐 Authentication System
