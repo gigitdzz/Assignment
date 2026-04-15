@@ -1,16 +1,4 @@
 <?php
-/*
-========================================
-File: faq.php
-Version: 1.0
-Changes from previous version:
-- Created FAQ page
-- Added common user questions related to registration and login
-- Added shared layout and navigation
-========================================
-*/
-
-// Start session so navigation can adapt to login state
 session_start();
 ?>
 
@@ -57,40 +45,51 @@ session_start();
 
             <div class="faq-list">
                 <div class="faq-item">
-                    <h3>How do I create a new account?</h3>
+                    <h3>How do I book an appointment now?</h3>
                     <p>
-                        Go to the Register page, complete your personal details, add your NHS Number,
-                        email address, phone number, and password, then submit the form.
+                        You first complete the medical form by selecting one or more symptoms.
+                        The system then recommends a suitable appointment type and staff category,
+                        such as GP, nurse, or specialist, and shows only valid available slots.
                     </p>
                 </div>
 
                 <div class="faq-item">
-                    <h3>What do I use to log in?</h3>
+                    <h3>Can I choose any time I want?</h3>
                     <p>
-                        You log in using your registered email address and password.
+                        No. Appointments are now offered only as valid 15-minute slots within staff
+                        working hours. Patients cannot book outside clinician schedules or during staff breaks.
                     </p>
                 </div>
 
                 <div class="faq-item">
-                    <h3>Why is my NHS Number required?</h3>
+                    <h3>What are the working hours for appointments?</h3>
                     <p>
-                        The NHS Number is included as a unique patient identifier to reflect
-                        real-world healthcare system requirements.
+                        Staff appointments are scheduled between 8:00am and 8:00pm. Break periods are
+                        also built into availability, so unavailable times are automatically excluded.
                     </p>
                 </div>
 
                 <div class="faq-item">
-                    <h3>Can two users share the same phone number?</h3>
+                    <h3>What types of staff can I be booked with?</h3>
                     <p>
-                        Yes. A phone number is required, but it is not unique, because family
-                        members may share the same contact number.
+                        Depending on your selected symptoms, the system may recommend a GP, nurse,
+                        or specialist. This helps match patients with appropriate care more efficiently.
                     </p>
                 </div>
 
                 <div class="faq-item">
-                    <h3>What happens if I enter the wrong login details?</h3>
+                    <h3>Can I see clinic availability before booking?</h3>
                     <p>
-                        The system shows a general error message to protect account security.
+                        Yes. The booking page displays clinicians by clinic and shows available times only,
+                        without exposing any other patient information.
+                    </p>
+                </div>
+
+                <div class="faq-item">
+                    <h3>Can I still reschedule or check in?</h3>
+                    <p>
+                        Yes. Rescheduling now follows the same scheduling rules as booking, and check-in
+                        is limited to appointments scheduled for the current day.
                     </p>
                 </div>
             </div>

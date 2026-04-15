@@ -2,7 +2,6 @@
 session_start();
 require_once 'db_connection.php';
 
-// Protect page
 if (!isset($_SESSION['user_id'])) {
     header("Location: login.php");
     exit();
@@ -11,16 +10,15 @@ if (!isset($_SESSION['user_id'])) {
 $user_id = (int) $_SESSION['user_id'];
 $full_name = htmlspecialchars($_SESSION['first_name'] . ' ' . $_SESSION['last_name']);
 
-// Default values
 $totalAppointments = 0;
 $upcomingAppointments = 0;
 $checkedInAppointments = 0;
 $cancelledAppointments = 0;
 $nextAppointment = null;
 $recentAppointments = [];
+$pastAppointments = [];
 $error_message = "";
 
-// 1. Total appointments
 $sqlTotal = "SELECT COUNT(*) AS total FROM appointments WHERE user_id = ?";
 $stmtTotal = $conn->prepare($sqlTotal);
 
@@ -36,12 +34,11 @@ if ($stmtTotal) {
     $error_message = "Unable to load dashboard statistics.";
 }
 
-// 2. Upcoming appointments
 $sqlUpcoming = "
     SELECT COUNT(*) AS upcoming
     FROM appointments
     WHERE user_id = ?
-      AND appointment_date >= CURDATE()
+      AND TIMESTAMP(appointment_date, appointment_time) >= NOW()
       AND (status IS NULL OR status NOT IN ('Cancelled'))
 ";
 $stmtUpcoming = $conn->prepare($sqlUpcoming);
@@ -56,7 +53,6 @@ if ($stmtUpcoming) {
     $stmtUpcoming->close();
 }
 
-// 3. Checked-in appointments
 $sqlCheckedIn = "
     SELECT COUNT(*) AS checked_in
     FROM appointments
@@ -75,7 +71,6 @@ if ($stmtCheckedIn) {
     $stmtCheckedIn->close();
 }
 
-// 4. Cancelled appointments
 $sqlCancelled = "
     SELECT COUNT(*) AS cancelled
     FROM appointments
@@ -94,14 +89,13 @@ if ($stmtCancelled) {
     $stmtCancelled->close();
 }
 
-// 5. Next upcoming appointment
 $sqlNext = "
-    SELECT a.appointment_id, a.appointment_date, a.appointment_time, a.status,
-           d.doctor_name, d.specialty
+    SELECT a.appointment_id, a.appointment_date, a.appointment_time, a.status, a.appointment_type,
+           d.doctor_name, d.specialty, d.clinic_name
     FROM appointments a
     INNER JOIN doctors d ON a.doctor_id = d.doctor_id
     WHERE a.user_id = ?
-      AND a.appointment_date >= CURDATE()
+      AND TIMESTAMP(a.appointment_date, a.appointment_time) >= NOW()
       AND (a.status IS NULL OR a.status NOT IN ('Cancelled'))
     ORDER BY a.appointment_date ASC, a.appointment_time ASC
     LIMIT 1
@@ -118,10 +112,9 @@ if ($stmtNext) {
     $stmtNext->close();
 }
 
-// 6. Recent appointments list
 $sqlRecent = "
-    SELECT a.appointment_id, a.appointment_date, a.appointment_time, a.status,
-           d.doctor_name, d.specialty
+    SELECT a.appointment_id, a.appointment_date, a.appointment_time, a.status, a.appointment_type,
+           d.doctor_name, d.specialty, d.clinic_name
     FROM appointments a
     INNER JOIN doctors d ON a.doctor_id = d.doctor_id
     WHERE a.user_id = ?
@@ -140,6 +133,30 @@ if ($stmtRecent) {
     }
 
     $stmtRecent->close();
+}
+
+$sqlPast = "
+    SELECT a.appointment_id, a.appointment_date, a.appointment_time, a.status, a.appointment_type,
+           d.doctor_name, d.specialty, d.clinic_name
+    FROM appointments a
+    INNER JOIN doctors d ON a.doctor_id = d.doctor_id
+    WHERE a.user_id = ?
+      AND TIMESTAMP(a.appointment_date, a.appointment_time) < NOW()
+      AND (a.status IS NULL OR a.status NOT IN ('Cancelled'))
+    ORDER BY a.appointment_date DESC, a.appointment_time DESC
+";
+$stmtPast = $conn->prepare($sqlPast);
+
+if ($stmtPast) {
+    $stmtPast->bind_param("i", $user_id);
+    $stmtPast->execute();
+    $resultPast = $stmtPast->get_result();
+
+    while ($row = $resultPast->fetch_assoc()) {
+        $pastAppointments[] = $row;
+    }
+
+    $stmtPast->close();
 }
 ?>
 <!DOCTYPE html>
@@ -164,7 +181,7 @@ if ($stmtRecent) {
 
     <nav class="nav-links">
         <a href="index.php">Home</a>
-        <a href="doctors.php">Doctors</a>
+        <a href="doctors.php">Clinics</a>
         <a href="book_appointment.php">Book Appointment</a>
         <a href="appointment_history.php">Appointment History</a>
         <a href="checkin.php">Check In</a>
@@ -218,10 +235,12 @@ if ($stmtRecent) {
 
         <?php if ($nextAppointment): ?>
             <div class="message message-info">
-                <strong>Doctor:</strong> <?php echo htmlspecialchars($nextAppointment['doctor_name']); ?><br>
+                <strong>Clinician:</strong> <?php echo htmlspecialchars($nextAppointment['doctor_name']); ?><br>
                 <strong>Specialty:</strong> <?php echo htmlspecialchars($nextAppointment['specialty']); ?><br>
+                <strong>Clinic:</strong> <?php echo htmlspecialchars($nextAppointment['clinic_name']); ?><br>
                 <strong>Date:</strong> <?php echo htmlspecialchars($nextAppointment['appointment_date']); ?><br>
-                <strong>Time:</strong> <?php echo htmlspecialchars($nextAppointment['appointment_time']); ?><br>
+                <strong>Time:</strong> <?php echo htmlspecialchars(substr($nextAppointment['appointment_time'], 0, 5)); ?><br>
+                <strong>Type:</strong> <?php echo htmlspecialchars($nextAppointment['appointment_type']); ?><br>
                 <strong>Status:</strong> <?php echo htmlspecialchars($nextAppointment['status'] ?? 'Booked'); ?>
             </div>
         <?php else: ?>
@@ -238,10 +257,12 @@ if ($stmtRecent) {
                     <thead>
                         <tr>
                             <th>ID</th>
-                            <th>Doctor</th>
+                            <th>Clinician</th>
+                            <th>Clinic</th>
                             <th>Specialty</th>
                             <th>Date</th>
                             <th>Time</th>
+                            <th>Type</th>
                             <th>Status</th>
                         </tr>
                     </thead>
@@ -250,9 +271,11 @@ if ($stmtRecent) {
                             <tr>
                                 <td><?php echo htmlspecialchars($appointment['appointment_id']); ?></td>
                                 <td><?php echo htmlspecialchars($appointment['doctor_name']); ?></td>
+                                <td><?php echo htmlspecialchars($appointment['clinic_name']); ?></td>
                                 <td><?php echo htmlspecialchars($appointment['specialty']); ?></td>
                                 <td><?php echo htmlspecialchars($appointment['appointment_date']); ?></td>
-                                <td><?php echo htmlspecialchars($appointment['appointment_time']); ?></td>
+                                <td><?php echo htmlspecialchars(substr($appointment['appointment_time'], 0, 5)); ?></td>
+                                <td><?php echo htmlspecialchars($appointment['appointment_type']); ?></td>
                                 <td><?php echo htmlspecialchars($appointment['status'] ?? 'Booked'); ?></td>
                             </tr>
                         <?php endforeach; ?>
@@ -262,6 +285,45 @@ if ($stmtRecent) {
         <?php else: ?>
             <div class="message message-info">
                 No appointments found yet.
+            </div>
+        <?php endif; ?>
+
+        <h3 style="margin-top: 30px; color:#005eb8;">Past Appointments</h3>
+
+        <?php if (!empty($pastAppointments)): ?>
+            <div class="table-wrapper">
+                <table class="appointments-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Clinician</th>
+                            <th>Clinic</th>
+                            <th>Specialty</th>
+                            <th>Date</th>
+                            <th>Time</th>
+                            <th>Type</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php foreach ($pastAppointments as $appointment): ?>
+                            <tr>
+                                <td><?php echo htmlspecialchars($appointment['appointment_id']); ?></td>
+                                <td><?php echo htmlspecialchars($appointment['doctor_name']); ?></td>
+                                <td><?php echo htmlspecialchars($appointment['clinic_name']); ?></td>
+                                <td><?php echo htmlspecialchars($appointment['specialty']); ?></td>
+                                <td><?php echo htmlspecialchars($appointment['appointment_date']); ?></td>
+                                <td><?php echo htmlspecialchars(substr($appointment['appointment_time'], 0, 5)); ?></td>
+                                <td><?php echo htmlspecialchars($appointment['appointment_type']); ?></td>
+                                <td><?php echo htmlspecialchars($appointment['status'] ?? 'Booked'); ?></td>
+                            </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+            </div>
+        <?php else: ?>
+            <div class="message message-info">
+                No past appointments found.
             </div>
         <?php endif; ?>
     </div>

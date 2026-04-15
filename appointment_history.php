@@ -2,7 +2,6 @@
 session_start();
 require_once 'db_connection.php';
 
-// Protect page
 if (!isset($_SESSION['user_id'])) {
     header("Location: login.php");
     exit();
@@ -10,17 +9,21 @@ if (!isset($_SESSION['user_id'])) {
 
 $user_id = (int) $_SESSION['user_id'];
 $full_name = htmlspecialchars($_SESSION['first_name'] . ' ' . $_SESSION['last_name']);
+
 $appointments = [];
+$upcomingAppointments = [];
+$pastAppointments = [];
 $error_message = "";
 
-// Load all appointments for this user
 $sql = "
     SELECT a.appointment_id,
            a.appointment_date,
            a.appointment_time,
            a.status,
+           a.appointment_type,
            d.doctor_name,
-           d.specialty
+           d.specialty,
+           d.clinic_name
     FROM appointments a
     INNER JOIN doctors d ON a.doctor_id = d.doctor_id
     WHERE a.user_id = ?
@@ -36,6 +39,15 @@ if ($stmt) {
 
     while ($row = $result->fetch_assoc()) {
         $appointments[] = $row;
+
+        $appointmentDateTime = strtotime($row['appointment_date'] . ' ' . $row['appointment_time']);
+        $currentDateTime = time();
+
+        if ($appointmentDateTime < $currentDateTime) {
+            $pastAppointments[] = $row;
+        } else {
+            $upcomingAppointments[] = $row;
+        }
     }
 
     $stmt->close();
@@ -43,12 +55,13 @@ if ($stmt) {
     $error_message = "Unable to load appointment history.";
 }
 
-// Optional stats for summary
 $totalAppointments = count($appointments);
 $bookedCount = 0;
 $checkedInCount = 0;
 $cancelledCount = 0;
 $rescheduledCount = 0;
+$pastCount = count($pastAppointments);
+$upcomingCount = count($upcomingAppointments);
 
 foreach ($appointments as $appointment) {
     $status = strtolower(trim($appointment['status'] ?? 'Booked'));
@@ -87,7 +100,7 @@ foreach ($appointments as $appointment) {
     <nav class="nav-links">
         <a href="index.php">Home</a>
         <a href="dashboard.php">Dashboard</a>
-        <a href="doctors.php">Doctors</a>
+        <a href="doctors.php">Clinics</a>
         <a href="book_appointment.php">Book Appointment</a>
         <a href="checkin.php">Check In</a>
         <a href="cancel.php">Cancel</a>
@@ -116,13 +129,23 @@ foreach ($appointments as $appointment) {
             </div>
 
             <div class="dashboard-box">
-                <h3>Booked</h3>
-                <p><?php echo $bookedCount; ?></p>
+                <h3>Upcoming</h3>
+                <p><?php echo $upcomingCount; ?></p>
+            </div>
+
+            <div class="dashboard-box">
+                <h3>Past</h3>
+                <p><?php echo $pastCount; ?></p>
             </div>
 
             <div class="dashboard-box">
                 <h3>Checked In</h3>
                 <p><?php echo $checkedInCount; ?></p>
+            </div>
+
+            <div class="dashboard-box">
+                <h3>Booked</h3>
+                <p><?php echo $bookedCount; ?></p>
             </div>
 
             <div class="dashboard-box">
@@ -136,27 +159,33 @@ foreach ($appointments as $appointment) {
             <a href="book_appointment.php" class="btn-primary">Book New Appointment</a>
         </div>
 
-        <?php if (!empty($appointments)): ?>
-            <div class="table-wrapper" style="margin-top: 25px;">
+        <h3 style="margin-top: 30px; color:#005eb8;">Upcoming Appointments</h3>
+
+        <?php if (!empty($upcomingAppointments)): ?>
+            <div class="table-wrapper" style="margin-top: 20px;">
                 <table class="appointments-table">
                     <thead>
                         <tr>
                             <th>Appointment ID</th>
-                            <th>Doctor</th>
+                            <th>Clinician</th>
+                            <th>Clinic</th>
                             <th>Specialty</th>
                             <th>Date</th>
                             <th>Time</th>
+                            <th>Type</th>
                             <th>Status</th>
                         </tr>
                     </thead>
                     <tbody>
-                        <?php foreach ($appointments as $appointment): ?>
+                        <?php foreach ($upcomingAppointments as $appointment): ?>
                             <tr>
                                 <td><?php echo htmlspecialchars($appointment['appointment_id']); ?></td>
                                 <td><?php echo htmlspecialchars($appointment['doctor_name']); ?></td>
+                                <td><?php echo htmlspecialchars($appointment['clinic_name']); ?></td>
                                 <td><?php echo htmlspecialchars($appointment['specialty']); ?></td>
                                 <td><?php echo htmlspecialchars($appointment['appointment_date']); ?></td>
-                                <td><?php echo htmlspecialchars($appointment['appointment_time']); ?></td>
+                                <td><?php echo htmlspecialchars(substr($appointment['appointment_time'], 0, 5)); ?></td>
+                                <td><?php echo htmlspecialchars($appointment['appointment_type']); ?></td>
                                 <td><?php echo htmlspecialchars($appointment['status'] ?? 'Booked'); ?></td>
                             </tr>
                         <?php endforeach; ?>
@@ -164,8 +193,47 @@ foreach ($appointments as $appointment) {
                 </table>
             </div>
         <?php else: ?>
-            <div class="message message-info" style="margin-top: 25px;">
-                No appointment history is available yet.
+            <div class="message message-info" style="margin-top: 20px;">
+                No upcoming appointments are available.
+            </div>
+        <?php endif; ?>
+
+        <h3 style="margin-top: 30px; color:#005eb8;">Past Appointments</h3>
+
+        <?php if (!empty($pastAppointments)): ?>
+            <div class="table-wrapper" style="margin-top: 20px;">
+                <table class="appointments-table">
+                    <thead>
+                        <tr>
+                            <th>Appointment ID</th>
+                            <th>Clinician</th>
+                            <th>Clinic</th>
+                            <th>Specialty</th>
+                            <th>Date</th>
+                            <th>Time</th>
+                            <th>Type</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php foreach ($pastAppointments as $appointment): ?>
+                            <tr>
+                                <td><?php echo htmlspecialchars($appointment['appointment_id']); ?></td>
+                                <td><?php echo htmlspecialchars($appointment['doctor_name']); ?></td>
+                                <td><?php echo htmlspecialchars($appointment['clinic_name']); ?></td>
+                                <td><?php echo htmlspecialchars($appointment['specialty']); ?></td>
+                                <td><?php echo htmlspecialchars($appointment['appointment_date']); ?></td>
+                                <td><?php echo htmlspecialchars(substr($appointment['appointment_time'], 0, 5)); ?></td>
+                                <td><?php echo htmlspecialchars($appointment['appointment_type']); ?></td>
+                                <td><?php echo htmlspecialchars($appointment['status'] ?? 'Booked'); ?></td>
+                            </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+            </div>
+        <?php else: ?>
+            <div class="message message-info" style="margin-top: 20px;">
+                No past appointments are available yet.
             </div>
         <?php endif; ?>
     </div>
