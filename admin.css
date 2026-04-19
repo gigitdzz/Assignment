@@ -1,0 +1,102 @@
+/* ===== ADMIN PANEL STYLES ===== */
+
+body {
+    background-color: #f5f7fa;
+}
+
+/* Header card */
+.admin-header-card {
+    background: linear-gradient(135deg, #005eb8, #003087);
+    color: white;
+    border-radius: 12px;
+    padding: 25px;
+    margin-bottom: 20px;
+}
+
+/* Tabs */
+.admin-tabs {
+    margin-top: 15px;
+}
+
+.admin-tab {
+    display: inline-block;
+    margin-right: 10px;
+    padding: 8px 12px;
+    border-radius: 6px;
+    background: rgba(255,255,255,0.2);
+    color: white;
+}
+
+.admin-tab:hover,
+.admin-tab.active {
+    background: white;
+    color: #005eb8;
+}
+
+/* Cards */
+.admin-card {
+    background: white;
+    border-radius: 10px;
+    padding: 20px;
+}
+
+/* Section titles */
+.admin-section-title {
+    margin-top: 30px;
+    color: #005eb8;
+}
+
+/* Tables */
+.table-wrapper {
+    margin-top: 15px;
+}
+
+.appointments-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.appointments-table th,
+.appointments-table td {
+    padding: 10px;
+    border: 1px solid #ddd;
+}
+
+.appointments-table th {
+    background-color: #005eb8;
+    color: white;
+}
+
+/* Buttons */
+.small-button {
+    padding: 6px 10px;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
+}
+
+.small-button.secondary {
+    background-color: gray;
+    color: white;
+}
+
+.small-button.danger {
+    background-color: red;
+    color: white;
+}
+
+/* Status colors */
+.status-booked {
+    color: #005eb8;
+    font-weight: bold;
+}
+
+.status-checked {
+    color: green;
+    font-weight: bold;
+}
+
+.status-cancelled {
+    color: red;
+    font-weight: bold;
+}
